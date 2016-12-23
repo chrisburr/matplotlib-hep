@@ -14,10 +14,8 @@ def calc_nbins(x, maximum=150):
 
 
 def poisson_limits(N, kind, confidence=0.6827):
-    alpha = 1 - confidence
-    upper = np.zeros(len(N))
-    lower = np.zeros(len(N))
     if kind == 'gamma':
+        alpha = 1 - confidence
         lower = stats.gamma.ppf(alpha / 2, N)
         upper = stats.gamma.ppf(1 - alpha / 2, N + 1)
     elif kind == 'sqrt':
@@ -28,7 +26,8 @@ def poisson_limits(N, kind, confidence=0.6827):
         raise ValueError('Unknown errorbar kind: {}'.format(kind))
     # clip lower bars
     lower[N == 0] = 0
-    return N - lower, upper - N
+    assert len(lower) == len(upper) == len(N)
+    return np.array(N - lower), np.array(upper - N)
 
 
 def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, scale=1,
