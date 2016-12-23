@@ -31,7 +31,8 @@ def poisson_limits(N, kind, confidence=0.6827):
     return N - lower, upper - N
 
 
-def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, **kwargs):
+def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, scale=1,
+               **kwargs):
     """
     Plot a histogram as a series of data points.
 
@@ -74,6 +75,10 @@ def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, **kwargs):
         h = h / area
         yerr = yerr / area
         area = 1.
+
+    h *= scale
+    yerr *= scale
+    area *= scale
 
     if 'color' not in kwargs:
         kwargs['color'] = 'black'
