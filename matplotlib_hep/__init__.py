@@ -2,15 +2,16 @@ from __future__ import division
 
 import numpy as np
 import scipy.stats as stats
-import scipy as sp
-import logging
 
 
 __all__ = ['histpoints', 'make_split', 'calc_nbins', 'plot_pull']
 
+
 def calc_nbins(x, maximum=150):
-    n =  (max(x) - min(x)) / (2 * len(x)**(-1/3) * (np.percentile(x, 75) - np.percentile(x, 25)))
+    n = (max(x) - min(x))
+    n /= (2 * len(x)**(-1/3) * (np.percentile(x, 75) - np.percentile(x, 25)))
     return np.floor(min(n, maximum))
+
 
 def poisson_limits(N, kind, confidence=0.6827):
     alpha = 1 - confidence
@@ -26,8 +27,9 @@ def poisson_limits(N, kind, confidence=0.6827):
     else:
         raise ValueError('Unknown errorbar kind: {}'.format(kind))
     # clip lower bars
-    lower[N==0] = 0
+    lower[N == 0] = 0
     return N - lower, upper - N
+
 
 def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, **kwargs):
     """
@@ -73,25 +75,27 @@ def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, **kwargs):
         yerr = yerr / area
         area = 1.
 
-    if not 'color' in kwargs:
+    if 'color' not in kwargs:
         kwargs['color'] = 'black'
 
-    if not 'fmt' in kwargs:
+    if 'fmt' not in kwargs:
         kwargs['fmt'] = 'o'
 
     plt.errorbar(center, h, xerr=xerr, yerr=yerr, **kwargs)
 
     return center, (yerr[0], h, yerr[1]), area
 
+
 def make_split(ratio, gap=0.12):
     import matplotlib.pyplot as plt
     from matplotlib.gridspec import GridSpec
-    from matplotlib.ticker import MaxNLocator
+
     cax = plt.gca()
     box = cax.get_position()
     xmin, ymin = box.xmin, box.ymin
     xmax, ymax = box.xmax, box.ymax
-    gs = GridSpec(2, 1, height_ratios=[ratio, 1 - ratio], left=xmin, right=xmax, bottom=ymin, top=ymax)
+    gs = GridSpec(2, 1, height_ratios=[ratio, 1 - ratio],
+                  left=xmin, right=xmax, bottom=ymin, top=ymax)
     gs.update(hspace=gap)
 
     ax = plt.subplot(gs[0])
@@ -100,11 +104,10 @@ def make_split(ratio, gap=0.12):
 
     return ax, bx
 
-def plot_pull(data, func):
 
+def plot_pull(data, func):
     import numpy as np
     import matplotlib.pyplot as plt
-    from matplotlib.ticker import MaxNLocator
 
     ax, bx = make_split(0.8)
 
@@ -116,8 +119,6 @@ def plot_pull(data, func):
 
     xs = np.linspace(lower, upper, 200)
     plt.plot(xs, norm * func(xs), 'b-')
-
-    #plt.gca().yaxis.set_major_locator(MaxNLocator(prune='lower'))
 
     plt.sca(bx)
 
@@ -135,4 +136,3 @@ def plot_pull(data, func):
     plt.sca(ax)
 
     return ax, bx
-
