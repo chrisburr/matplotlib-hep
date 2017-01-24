@@ -4,7 +4,10 @@ import numpy as np
 import scipy.stats as stats
 
 
-__all__ = ['histpoints', 'make_split', 'calc_nbins', 'plot_pull', 'rcParams']
+__all__ = [
+    'histpoints', 'make_split', 'calc_nbins', 'plot_pull', 'plot_data_pull',
+    'rcParams'
+]
 
 
 rcParams = {
@@ -123,7 +126,35 @@ def make_split(ratio, gap=0.12):
     return ax, bx
 
 
-def plot_pull(data, func):
+def plot_data_pull(data_1, data_2, data_1_kwargs={}, data_2_kwargs={}):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    ax, bx = make_split(0.8)
+
+    plt.sca(ax)
+    x_1, y_1, norm_1 = histpoints(data_1, **data_1_kwargs)
+    x_2, y_2, norm_2 = histpoints(data_2, **data_2_kwargs)
+
+    plt.sca(bx)
+
+    resid = y_1[1] - y_2[1]
+    err = np.zeros_like(resid)
+    err[resid >= 0] = np.sqrt(y_1[0][resid >= 0]**2 + y_2[2][resid >= 0]**2)
+    err[resid < 0] = np.sqrt(y_1[2][resid < 0]**2 + y_2[0][resid < 0]**2)
+
+    pull = resid / err
+
+    plt.errorbar(x_1, pull, yerr=1, color='k', fmt='o', ms=0)
+    plt.ylim(-5, 5)
+    plt.axhline(0, color='b')
+
+    plt.sca(ax)
+
+    return ax, bx
+
+
+def plot_pull(data, func, data_kwargs={}, func_fmt='b-'):
     import numpy as np
     import matplotlib.pyplot as plt
 
@@ -131,12 +162,12 @@ def plot_pull(data, func):
 
     plt.sca(ax)
 
-    x, y, norm = histpoints(data)
+    x, y, norm = histpoints(data, **data_kwargs)
 
     lower, upper = ax.get_xlim()
 
     xs = np.linspace(lower, upper, 200)
-    plt.plot(xs, norm * func(xs), 'b-')
+    plt.plot(xs, norm * func(xs), func_fmt)
 
     plt.sca(bx)
 
@@ -147,7 +178,7 @@ def plot_pull(data, func):
 
     pull = resid / err
 
-    plt.errorbar(x, pull, yerr=1, color='k', fmt='o')
+    plt.errorbar(x, pull, yerr=1, color=rcParams['color'], fmt=rcParams['fmt'])
     plt.ylim(-5, 5)
     plt.axhline(0, color='b')
 
