@@ -78,7 +78,10 @@ def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, scale=1,
     import matplotlib.pyplot as plt
 
     if bins is None:
-        bins = rcParams['bins'] or calc_nbins(x)
+        if rcParams['bins'] is None:
+            bins = calc_nbins(x)
+        else:
+            bins = rcParams['bins']
 
     h, bins = np.histogram(x, bins=bins)
     width = bins[1] - bins[0]
