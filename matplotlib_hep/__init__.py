@@ -4,7 +4,25 @@ import numpy as np
 import scipy.stats as stats
 
 
-__all__ = ['histpoints', 'make_split', 'calc_nbins', 'plot_pull']
+__all__ = ['histpoints', 'make_split', 'calc_nbins', 'plot_pull', 'rcParams']
+
+
+rcParams = {
+    'markersize': 3,
+    'color': 'black',
+    'fmt': 'o',
+    'bins': None,
+}
+
+
+def apply_rc_params(kwargs, keys):
+    equivilents = {'c': 'color', 'ms': 'markersize'}
+    for key in keys:
+        value = rcParams[key]
+        if key not in kwargs and key in equivilents:
+            key = equivilents[key]
+        if key not in kwargs:
+            kwargs[key] = value
 
 
 def calc_nbins(x, maximum=150):
@@ -57,7 +75,7 @@ def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, scale=1,
     import matplotlib.pyplot as plt
 
     if bins is None:
-        bins = calc_nbins(x)
+        bins = rcParams['bins'] or calc_nbins(x)
 
     h, bins = np.histogram(x, bins=bins)
     width = bins[1] - bins[0]
@@ -79,11 +97,7 @@ def histpoints(x, bins=None, xerr=None, yerr='gamma', normed=False, scale=1,
     yerr = yerr[0] * scale, yerr[1] * scale
     area = area * scale
 
-    if 'color' not in kwargs:
-        kwargs['color'] = 'black'
-
-    if 'fmt' not in kwargs:
-        kwargs['fmt'] = 'o'
+    apply_rc_params(kwargs, ['color', 'fmt', 'markersize'])
 
     plt.errorbar(center, h, xerr=xerr, yerr=yerr, **kwargs)
 
