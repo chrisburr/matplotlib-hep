@@ -157,7 +157,8 @@ def plot_data_pull(data_1, data_2, data_1_kwargs={}, data_2_kwargs={}):
     return ax, bx
 
 
-def plot_pull(data, func, data_kwargs={}, func_fmt='b-'):
+def plot_pull(data, func, data_kwargs={}, func_fmt='-', pdf_normed=True,
+              **kwargs):
     import numpy as np
     import matplotlib.pyplot as plt
 
@@ -166,24 +167,33 @@ def plot_pull(data, func, data_kwargs={}, func_fmt='b-'):
     plt.sca(ax)
 
     x, y, norm = histpoints(data, **data_kwargs)
+    bin_width = x[1]-x[0]
+    np.testing.assert_allclose(np.diff(x), bin_width)
 
     lower, upper = ax.get_xlim()
 
-    xs = np.linspace(lower, upper, 200)
-    plt.plot(xs, norm * func(xs), func_fmt)
+    xs = np.linspace(lower, upper, 1000)
+    if pdf_normed:
+        plt.plot(xs, norm * func(xs), func_fmt, **kwargs)
+    else:
+        plt.plot(xs, bin_width * func(xs), func_fmt, **kwargs)
 
     plt.sca(bx)
 
-    resid = y[1] - norm * func(x)
+    if pdf_normed:
+        resid = y[1] - norm * func(x)
+    else:
+        resid = y[1] - bin_width * func(x)
     err = np.zeros_like(resid)
     err[resid >= 0] = y[0][resid >= 0]
     err[resid < 0] = y[2][resid < 0]
 
     pull = resid / err
 
-    plt.errorbar(x, pull, yerr=1, color=rcParams['color'], fmt=rcParams['fmt'])
+    plt.errorbar(x, pull, yerr=1, color=rcParams['color'], fmt=rcParams['fmt'],
+                 ms=rcParams['markersize'])
     plt.ylim(-5, 5)
-    plt.axhline(0, color='b')
+    plt.axhline(0, color='k')
 
     plt.sca(ax)
 
